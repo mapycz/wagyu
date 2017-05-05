@@ -1,0 +1,13 @@
+Source: szn-libwagyu
+Maintainer: Jiri Drbalek <jiri.drbalek@firma.seznam.cz>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends:
+    debhelper (>= 9)
+
+Package: szn-libwagyu-dev
+Section: libdevel
+Architecture: amd64
+Depends: ${misc:Depends}
+Description: Provides header-only, generic C++ interfaces for geometry types, geometry collections, and features

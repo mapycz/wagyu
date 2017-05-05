@@ -1,10 +1,6 @@
-BOOST_VERSION=1.63.0
-RAPIDJSON_VERSION=1.1.0
-GEOMETRY_VERSION=0.9.0
-
 CC := $(CC)
 CXX := $(CXX)
-CXXFLAGS := $(CXXFLAGS) -Iinclude -isystem mason_packages/headers/boost/$(BOOST_VERSION)/include -isystem mason_packages/headers/rapidjson/$(RAPIDJSON_VERSION)/include -isystem mason_packages/headers/geometry/$(GEOMETRY_VERSION)/include -std=c++11
+CXXFLAGS := $(CXXFLAGS) -Iinclude -std=c++11
 RELEASE_FLAGS := -O3 -DNDEBUG
 WARNING_FLAGS := -Wall -Wextra -Weffc++ -Werror -Wsign-compare -Wfloat-equal -Wshadow -Wconversion
 DEBUG_FLAGS := -g -O0 -DDEBUG -fno-inline-functions -fno-omit-frame-pointer
@@ -14,22 +10,11 @@ ANGUS_DEFINES := -D'CLIPPER_INTPOINT_IMPL=mapbox::geometry::point<cInt>' -D'CLIP
 
 default: test
 
-mason_packages/headers/boost/$(BOOST_VERSION)/include:
-	./mason.sh install --header-only boost $(BOOST_VERSION)
+build-test: tests/* include/mapbox/geometry/* Makefile
+	$(CXX) $(RELEASE_FLAGS) tests/test.cpp tests/unit/*.cpp $(WARNING_FLAGS) $(CXXFLAGS) -I ./tests -o test
 
-mason_packages/headers/rapidjson/$(RAPIDJSON_VERSION)/include:
-	./mason.sh install --header-only rapidjson $(RAPIDJSON_VERSION)
-
-mason_packages/headers/geometry/$(GEOMETRY_VERSION)/include:
-	./mason.sh install --header-only geometry $(GEOMETRY_VERSION)
-
-deps: mason_packages/headers/boost/$(BOOST_VERSION)/include mason_packages/headers/rapidjson/$(RAPIDJSON_VERSION)/include mason_packages/headers/geometry/$(GEOMETRY_VERSION)/include
-
-build-test: tests/* include/mapbox/geometry/* deps Makefile
-	$(CXX) $(RELEASE_FLAGS) tests/test.cpp tests/unit/*.cpp $(WARNING_FLAGS) $(CXXFLAGS) -isystem ./tests -o test
-
-build-debug: tests/* include/mapbox/geometry/* deps Makefile
-	$(CXX) $(DEBUG_FLAGS) tests/test.cpp tests/unit/*.cpp $(WARNING_FLAGS) $(CXXFLAGS) -isystem ./tests -o test
+build-debug: tests/* include/mapbox/geometry/* Makefile
+	$(CXX) $(DEBUG_FLAGS) tests/test.cpp tests/unit/*.cpp $(WARNING_FLAGS) $(CXXFLAGS) -I ./tests -o test
 
 build-fixture-tester-r:
 	$(CXX) $(RELEASE_FLAGS) tests/fixture-tester.cpp $(WARNING_FLAGS) $(CXXFLAGS)  -o fixture-tester
@@ -51,13 +36,13 @@ quick_clip_profile: tests/quick_clip_profile.cpp
 	git clone https://github.com/mapnik/clipper.git -b r496-mapnik ./deps/clipper && cd ./deps/clipper && git checkout $(CLIPPER_REVISION) && ./cpp/fix_members.sh
 
 build-benchmark: ./deps/clipper
-	$(CXX) -c $(RELEASE_FLAGS) deps/clipper/cpp/clipper.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -isystem ./deps/clipper/cpp
-	$(CXX) -c $(RELEASE_FLAGS) tests/benchmark.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -isystem ./deps/clipper/cpp
+	$(CXX) -c $(RELEASE_FLAGS) deps/clipper/cpp/clipper.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -I ./deps/clipper/cpp
+	$(CXX) -c $(RELEASE_FLAGS) tests/benchmark.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -I ./deps/clipper/cpp
 	$(CXX) $(RELEASE_FLAGS) clipper.o benchmark.o $(CXXFLAGS) -o benchmark
 
 build-benchmark-d: ./deps/clipper
-	$(CXX) -c $(DEBUG_FLAGS) deps/clipper/cpp/clipper.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -isystem ./deps/clipper/cpp
-	$(CXX) -c $(DEBUG_FLAGS) tests/benchmark.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -isystem ./deps/clipper/cpp
+	$(CXX) -c $(DEBUG_FLAGS) deps/clipper/cpp/clipper.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -I ./deps/clipper/cpp
+	$(CXX) -c $(DEBUG_FLAGS) tests/benchmark.cpp $(ANGUS_DEFINES) $(CXXFLAGS) -I ./deps/clipper/cpp
 	$(CXX) $(DEBUG_FLAGS) clipper.o benchmark.o $(CXXFLAGS) -o benchmark
 
 benchmark: build-benchmark
@@ -80,6 +65,10 @@ fuzzer: build-fuzzer
 # avoids tools from getting deleted by make when it fails or you ctrl-c process
 .PRECIOUS: fuzzer benchmark fixture-tester test
 
+install:
+	install -m 0755 -o root -g root -d $(DESTDIR)/usr/include/mapbox/geometry/wagyu
+	install -m 0644 -o root -g root include/mapbox/geometry/wagyu/* $(DESTDIR)/usr/include/mapbox/geometry/wagyu
+
 clean:
 	rm -rf *dSYM
 	rm -rf deps/
@@ -88,9 +77,3 @@ clean:
 	rm -f test
 	rm -f fuzzer
 	rm -f fixture-tester
-
-distclean: clean
-	rm -rf ./mason_packages
-
-indent:
-	clang-format -i $(filter-out ./tests/catch.hpp, $(shell find . -path ./mason_packages -prune -o '(' -name '*.hpp' -o -name '*.cpp' ')' -type f -print))
