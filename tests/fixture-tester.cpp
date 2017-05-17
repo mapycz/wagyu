@@ -10,6 +10,8 @@
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/filewritestream.h>
 
+#include "is_valid.hpp"
+
 using namespace rapidjson;
 using namespace mapbox::geometry::wagyu;
 using value_type = std::int64_t;

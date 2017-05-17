@@ -11,6 +11,8 @@
 #include <time.h>
 #include <vector>
 
+#include "is_valid.hpp"
+
 static int s_int = 0;
 
 static void signal_handler(int value) {
