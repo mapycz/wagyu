@@ -10,4 +10,4 @@ Package: szn-libwagyu-dev
 Section: libdevel
 Architecture: amd64
 Depends: ${misc:Depends}
-Description: Provides header-only, generic C++ interfaces for geometry types, geometry collections, and features
+Description: A general library for geometry operations of union, intersections, difference, and xor 
