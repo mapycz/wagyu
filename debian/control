@@ -4,7 +4,8 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.2
 Build-Depends:
-    debhelper (>= 9)
+    debhelper (>= 9),
+    rapidjson-dev
 
 Package: szn-libwagyu-dev
 Section: libdevel
