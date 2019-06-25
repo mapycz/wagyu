@@ -5,7 +5,8 @@ Priority: optional
 Standards-Version: 3.9.2
 Build-Depends:
     debhelper (>= 9),
-    rapidjson-dev
+    rapidjson-dev,
+    szn-libmapbox-geometry-dev
 
 Package: szn-libwagyu-dev
 Section: libdevel
